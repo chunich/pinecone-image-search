@@ -51,8 +51,10 @@ async function embedAndUpsert({
 
 const indexImages = async () => {
   try {
+    console.log("Entering indexImages.....");
     // Create the index if it doesn't already exist
     const indexList = await pinecone.listIndexes();
+    console.log({ indexList });
     if (!indexList.indexes?.some((index) => index.name === indexName)) {
       await pinecone.createIndex({
         name: indexName,

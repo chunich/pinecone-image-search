@@ -7,6 +7,7 @@ interface Image {
 }
 
 interface SearchResult {
+  id: string;
   src: string;
   score: number;
 }
@@ -19,16 +20,31 @@ function App() {
   const [page, setPage] = useState(1);
   const [indexing, setIndexing] = useState(false);
   const [indexSuccess, setIndexSuccess] = useState(false);
-  const pageSize = 3;
+  const pageSize = 20;
+
+  const { hostname, protocol } = window.location;
+  const host =
+    hostname === "localhost" ? `${protocol}//${hostname}:3000` : origin;
 
   useEffect(() => {
     const fetchImages = async () => {
-      const response = await fetch(
-        `/getImages?page=${page}&pageSize=${pageSize}`
-      );
-      const data: Image[] = await response.json();
-      console.log(data);
-      setImages(data);
+      // const response = await fetch(
+      //   `${host}/getImages?page=${page}&pageSize=${pageSize}`
+      // );
+      // const data: Image[] = await response.json();
+
+      const size = 48;
+      const pokemonImages: Image[] = [];
+      for (let i = 10; i < 10 + size; i++) {
+        pokemonImages.push({
+          src: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${i}.png`,
+          alt: `${i} image`,
+        });
+      }
+      // const mergedResults = [...pokemonImages, ...data];
+      const mergedResults = [...pokemonImages];
+      console.log(mergedResults);
+      setImages(mergedResults);
     };
 
     fetchImages();
@@ -36,7 +52,7 @@ function App() {
 
   const handleIndexClick = async () => {
     setIndexing(true);
-    const response = await fetch("/indexImages");
+    const response = await fetch(`${host}/indexImages`);
     setIndexing(false);
     if (response.status === 200) {
       setIndexSuccess(true);
@@ -46,7 +62,7 @@ function App() {
   const handleImageClick = async (imagePath: string) => {
     setSelectedImage(imagePath);
     const response = await fetch(
-      `/search?imagePath=${encodeURIComponent(imagePath)}`
+      `${host}/search?imagePath=${encodeURIComponent(imagePath)}`
     );
     const matchingImages: SearchResult[] = await response.json();
     setSearchResults(matchingImages);
@@ -66,7 +82,7 @@ function App() {
             indexSuccess ? "bg-green-500" : "bg-blue-400"
           } mr-4 py-2 px-4 bg-green-500 hover:bg-green-700 text-white font-semibold rounded-lg shadow-md focus:outline-none`}
         >
-          Index
+          CLICK to Index all images
         </button>
         {indexing && (
           <div className="flex justify-center items-center h-screen">
@@ -75,16 +91,23 @@ function App() {
         )}
       </div>
 
-      <div className="grid grid-cols-3 gap-4 p-5">
+      <div className="grid grid-cols-12 gap-4 p-5">
         {images.map((image, index) => (
           <div
             key={index}
-            className={`w-full h-64 bg-gray-600 rounded-md flex items-center justify-center ${
+            className={`w-full bg-gray-600 rounded-md flex items-center justify-center ${
               image.src === selectedImage ? "border-4 border-blue-500" : ""
             }`}
             onClick={() => handleImageClick(image.src)}
           >
-            <img src={image.src} alt={image.alt} />
+            <img
+              src={
+                image.src.indexOf("data") > -1
+                  ? `http://localhost:3000/${image.src}`
+                  : image.src
+              }
+              alt={image.alt}
+            />
           </div>
         ))}
       </div>
@@ -104,19 +127,21 @@ function App() {
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4 p-5">
+      <div className="grid grid-cols-4 gap-2 p-5">
         {searchResults.map((result, index) => (
           <div
             key={index}
-            className="w-full h-64 bg-gray-600 rounded-md flex flex-col items-center justify-center my-2 overflow-hidden"
+            className="w-full h-60 bg-gray-600 rounded-md flex flex-col items-center justify-center my-2 overflow-hidden"
           >
             <img
-              src={result.src}
+              src={`http://localhost:3000/${result.src}`}
               alt="Search result"
               className="w-full h-4/5 object-cover"
             />
-            <p className="w-full text-center bg-blue-500 text-white">
+            <p className="w-full text-xs text-left bg-blue-500 text-white">
               Score: {result.score}
+              <br />
+              ID: {result.id}
             </p>
           </div>
         ))}

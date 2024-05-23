@@ -28,6 +28,7 @@ const routes: Route[] = [
     method: "get",
     handler: async (req, res) => {
       try {
+        // throw new Error("WHAT - indexImages");
         await indexImages();
         res.status(200).json({ message: "Indexing complete" });
       } catch (error) {
@@ -39,6 +40,8 @@ const routes: Route[] = [
     route: "/getImages",
     method: "get",
     handler: async (req, res) => {
+      // throw new Error("WHAT? getImages");
+
       const page = parseInt(req.query.page as string, 10) || 1;
       const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
 

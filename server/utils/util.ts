@@ -14,6 +14,7 @@ async function listFiles(dir: string): Promise<string[]> {
   const filePaths: string[] = [];
   for (const file of files) {
     const filePath = path.join(dir, file);
+    // console.log({ filePath });
     const stats = await fs.stat(filePath);
     if (stats.isFile()) {
       filePaths.push(filePath);
