@@ -2,6 +2,11 @@
 
 Forked from https://github.com/pinecone-io/image-search-example
 
+# This Version
+
+![image](https://github.com/chunich/pinecone-image-search/assets/80179854/004f7ecd-43a7-4abb-b93d-c7b6eff99202)
+
+
 # Questions
 
 ## 05/24/2024
