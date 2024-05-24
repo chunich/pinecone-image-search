@@ -6,14 +6,17 @@ Forked from https://github.com/pinecone-io/image-search-example
 
 ## 05/24/2024
 
--- Wiped out search-images index on Pinecone
--- Started small, included `text_inputs` with sentences when indexing
--- Use `<select>` option as `name` value during query
--- Combining embeddings of images and texts into aggregates (concat expands dimensions to 1024, weighted keeps it at 512, but hit-or-miss somehow 🤷‍♂️)
+- Wiped out search-images index on Pinecone
+- Started small, included `text_inputs` with sentences when indexing
+- Use `<select>` option as `name` value during query
+- Combining embeddings of images and texts into aggregates
+  - `concat` expands dimensions to 1024
+  - `weighted` keeps it at 512, but hit-or-miss somehow 🤷‍♂️
+- Lost `metadata.name` somehow, not important
 
 ## 05/23/2024
 
--- Re-embedded images with `metadata.name`, new structure on Pinecone now has
+- Re-embedded images with `metadata.name`, new structure on Pinecone now has
 
 ```
 {
@@ -26,9 +29,9 @@ Forked from https://github.com/pinecone-io/image-search-example
 }
 ```
 
--- query now works with metadata filtering, with string-equality check `$eq`, per doc: https://docs.pinecone.io/guides/data/filter-with-metadata
--- `vector` values are still REQUIRED, `filter` only narrows it down
--- `$regex` is NOT supported 😔
+- query now works with metadata filtering, with string-equality check `$eq`, per doc: https://docs.pinecone.io/guides/data/filter-with-metadata
+- `vector` values are still REQUIRED, `filter` only narrows it down
+- `$regex` is NOT supported 😔
 
 ## 05/23/2024
 
