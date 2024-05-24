@@ -98,8 +98,8 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-800 text-white w-full">
-      <div className="flex justify-center p-5">
-        <h1 className="text-4xl">Image Search</h1>
+      <div className="flex place-items-center p-5">
+        <h1 className="text-4xl mr-5">Image Search</h1>
         <br />
         <div className="flex flex-col font-mono text-xs">
           <div>[images] are stored in Pinecone DB</div>
