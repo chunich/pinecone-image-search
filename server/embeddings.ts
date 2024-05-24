@@ -12,8 +12,6 @@ import type {
   PineconeRecord,
 } from "@pinecone-database/pinecone";
 import { createHash } from "crypto";
-
-import { text } from "stream/consumers";
 import { sliceIntoChunks } from "./utils/util.js";
 
 class Embedder {
@@ -32,33 +30,58 @@ class Embedder {
 
   // Embeds an image and returns the embedding
   async embed(
+    action: string,
     imagePath: string,
+    name: string, // TODO: HOW TO UTILIZE THIS IN tokenizer?
     metadata?: RecordMetadata
   ): Promise<PineconeRecord> {
     try {
       // Load the image
-      // const image = await RawImage.read("https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/65.png");
       const image = await RawImage.read(imagePath);
       // Prepare the image and text inputs
       const image_inputs = await this.processor(image);
+      // No text inputs
 
-      const colors = ["yellow", "pink", "purple", "green", "blue"];
-      const value = Math.random() * colors.length;
-      const index = Math.floor(value);
-      const color = colors[index];
-      const textHint = `${color} monster with wings`;
+      const input_sentences = [];
 
-      const text_inputs = this.tokenizer([textHint], {
+      // Index with sentences
+      if (action === "index") {
+        if (name) {
+          input_sentences.push("This is a photo of pokemon monster");
+          input_sentences.push("It is a cartoon character");
+          input_sentences.push(`Its name is ${name}`);
+        } else {
+          input_sentences.push("");
+        }
+      } else {
+        // Query with just "name"
+        input_sentences.push(name ?? "");
+      }
+
+      const text_inputs = this.tokenizer(input_sentences, {
         padding: true,
         truncation: true,
       });
-      console.log({ textHint, value, index });
       // Embed the image
       const output = await this.model({ ...text_inputs, ...image_inputs });
-      const { image_embeds } = output;
-      const { data: embeddings } = image_embeds;
 
-      // console.log({ image_embeds });
+      const { image_embeds, text_embeds } = output;
+      console.log({ name, imagePath, output });
+
+      const { data: image_embeddings } = image_embeds;
+      const { data: text_embeddings } = text_embeds;
+
+      // Adjust as needed
+      const imageWeight = 0.3;
+      const textWeight = 0.7;
+
+      // Weighted
+      const combinedEmbeddings = image_embeddings.map(
+        (val: number, i: number) =>
+          val * imageWeight + text_embeddings[i] * textWeight
+      );
+
+      const values = combinedEmbeddings; // [...image_embeddings, ...text_embeddings];
 
       // Create an id for the image
       const id = createHash("md5").update(imagePath).digest("hex");
@@ -68,9 +91,9 @@ class Embedder {
         id,
         metadata: metadata || {
           imagePath,
-          textHint,
+          name,
         },
-        values: Array.from(embeddings) as number[],
+        values: Array.from(values) as number[],
       };
     } catch (e) {
       console.log(`Error embedding image, ${e}`);
@@ -87,7 +110,7 @@ class Embedder {
     const batches = sliceIntoChunks<string>(imagePaths, batchSize);
     for (const batch of batches) {
       const embeddings = await Promise.all(
-        batch.map((imagePath) => this.embed(imagePath))
+        batch.map((imagePath) => this.embed("index", imagePath, ""))
       );
       await onDoneBatch(embeddings);
     }

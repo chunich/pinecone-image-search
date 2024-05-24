@@ -5,28 +5,39 @@ import { getEnv } from "./utils/util.ts";
 
 type Metadata = {
   imagePath: string;
-  textHint: string;
+  name: string;
 };
 
 const indexName = getEnv("PINECONE_INDEX");
 const pinecone = new Pinecone();
 const index = pinecone.index<Metadata>(indexName);
+const modelName = getEnv("MODEL_NAME");
 
-await embedder.init("Xenova/clip-vit-base-patch32");
+await embedder.init(modelName);
 
-const queryImages = async (imagePath: string) => {
-  const queryEmbedding = await embedder.embed(imagePath);
+const queryImages = async ({ imagePath, name }: Metadata) => {
+  const queryEmbedding = await embedder.embed("query", imagePath, name);
+
+  console.log(queryEmbedding.values);
+  // TODO: Excludes for now
+  const queryFilter = name
+    ? {
+        name: { $eq: name },
+      }
+    : {};
   const queryResult = await index.namespace("default").query({
     vector: queryEmbedding.values,
+    filter: {},
     includeMetadata: true,
     includeValues: true,
     topK: 6,
   });
+
   return queryResult.matches?.map((match) => {
     const { metadata, id } = match;
     return {
       src: metadata ? metadata.imagePath : "",
-      textHint: metadata ? metadata.textHint : "",
+      name: metadata ? metadata.name : "",
       score: match.score,
       id,
     };
