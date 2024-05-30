@@ -9,6 +9,7 @@ export type Metadata = {
 };
 
 const indexName = getEnv("PINECONE_INDEX");
+const indexNamespace = getEnv("PINECONE_INDEX_NAMESPACE");
 const pinecone = new Pinecone();
 const index = pinecone.index<Metadata>(indexName);
 const modelName = getEnv("MODEL_NAME");
@@ -25,7 +26,7 @@ const queryImages = async ({ imagePath, name }: Metadata) => {
         name: { $eq: name },
       }
     : {};
-  const queryResult = await index.namespace("default").query({
+  const queryResult = await index.namespace(indexNamespace).query({
     vector: queryEmbedding.values,
     filter: {},
     includeMetadata: true,

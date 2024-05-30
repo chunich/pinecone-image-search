@@ -15,8 +15,10 @@ dotenv.config();
 
 // Index setup
 const indexName = getEnv("PINECONE_INDEX");
+const indexNamespace = getEnv("PINECONE_INDEX_NAMESPACE");
 const indexCloud = getEnv("PINECONE_CLOUD") as ServerlessSpecCloudEnum;
 const indexRegion = getEnv("PINECONE_REGION");
+const folder = getEnv("IMAGE_SOURCE_FOLDER");
 const pinecone = new Pinecone();
 // Model setup
 const modelName = getEnv("MODEL_NAME");
@@ -46,7 +48,7 @@ async function embedAndUpsert({
       imagePaths,
       chunkSize,
       async (embeddings: PineconeRecord[]) => {
-        await chunkedUpsert(index, embeddings, "default");
+        await chunkedUpsert(index, embeddings, indexNamespace);
       }
     );
   }
@@ -69,7 +71,7 @@ const indexImages = async () => {
     }
     await embedder.init(modelName);
 
-    const imagePaths = await listFiles("./data");
+    const imagePaths = await listFiles(folder);
 
     // Limit # of images to index ($$$ saving)
     const filteredImagePaths = imagePaths.filter((img) =>

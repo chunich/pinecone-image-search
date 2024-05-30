@@ -5,6 +5,7 @@ import { getEnv } from "./utils/util.ts";
 import { type Metadata } from "./query.js";
 
 const indexName = getEnv("PINECONE_INDEX");
+const indexNamespace = getEnv("PINECONE_INDEX_NAMESPACE");
 const modelName = getEnv("MODEL_NAME");
 const pinecone = new Pinecone();
 const index = pinecone.index<Metadata>(indexName);
@@ -13,7 +14,7 @@ await embedder.init(modelName);
 
 const getPineconeId = async (imagePath: string) => {
   const queryEmbedding = await embedder.embed("index", imagePath, "");
-  const queryResult = await index.namespace("default").query({
+  const queryResult = await index.namespace(indexNamespace).query({
     vector: queryEmbedding.values,
     includeMetadata: true,
     includeValues: false,
@@ -25,7 +26,7 @@ const getPineconeId = async (imagePath: string) => {
 
 const deleteImage = async (imagePath: string) => {
   const pineconeId = await getPineconeId(imagePath);
-  await index.namespace("default").deleteOne(pineconeId);
+  await index.namespace(indexNamespace).deleteOne(pineconeId);
 
   // Append _deleted to the image path for demo purposes
   // await fs.rename(imagePath, `${imagePath}_deleted`);

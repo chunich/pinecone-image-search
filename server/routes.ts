@@ -4,7 +4,7 @@ import { queryImages } from "./query.ts";
 import { indexImages } from "./indexImages.ts";
 import { deleteImage } from "./deleteImage.ts";
 import { upsertImages } from "./upsertImages.ts";
-import { listFiles } from "./utils/util.ts";
+import { listFiles, getEnv } from "./utils/util.ts";
 
 interface Route {
   route: string;
@@ -83,10 +83,12 @@ const routes: Route[] = [
 
         console.log({ uploadedImagePaths });
 
+        const folder = getEnv("IMAGE_SOURCE_FOLDER");
+
         try {
           await upsertImages(uploadedImagePaths);
           // Return the page number of the first image uploaded (for demo purposes)
-          const imagePaths = await listFiles("./data");
+          const imagePaths = await listFiles(folder);
           const pageSize = parseInt(req.query.pageSize as string, 10) || 10;
           const pageOfFirstImage =
             Math.floor(imagePaths.indexOf(uploadedImagePaths[0]) / pageSize) +

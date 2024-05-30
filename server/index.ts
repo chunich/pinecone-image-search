@@ -6,6 +6,7 @@ import { fileURLToPath } from "url";
 
 import { existsSync } from "fs";
 import { resolvers } from "./routes.ts";
+import { getEnv } from "./utils/util.ts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -13,6 +14,7 @@ const __dirname = dirname(__filename);
 const app: express.Application = express();
 const port: string | number = process.env.PORT || 3000;
 const isProd: boolean = process.env.NODE_ENV === "production";
+const folder = getEnv("IMAGE_SOURCE_FOLDER");
 
 if (isProd) {
   const buildPath: string = path.resolve(__dirname, "app/dist");
@@ -38,7 +40,7 @@ if (isProd) {
   app.use(cors());
   app.use(router);
 
-  app.use("/data", express.static(join(__dirname, "../data")));
+  app.use("/data", express.static(join(__dirname, `.${folder}`)));
 
   app.use(
     "/",
