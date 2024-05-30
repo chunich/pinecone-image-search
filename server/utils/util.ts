@@ -16,7 +16,11 @@ async function listFiles(dir: string): Promise<string[]> {
     const filePath = path.join(dir, file);
     // console.log({ filePath });
     const stats = await fs.stat(filePath);
-    if (stats.isFile()) {
+    if (
+      stats.isFile() &&
+      !filePath.includes(".DS_Store") &&
+      !filePath.includes("_deleted")
+    ) {
       filePaths.push(filePath);
     }
   }

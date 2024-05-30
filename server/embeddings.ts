@@ -36,6 +36,7 @@ class Embedder {
     metadata?: RecordMetadata
   ): Promise<PineconeRecord> {
     try {
+      console.log(`"embed": ${imagePath}`);
       // Load the image
       const image = await RawImage.read(imagePath);
       // Prepare the image and text inputs

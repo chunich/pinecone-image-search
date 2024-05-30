@@ -3,6 +3,7 @@
 import * as dotenv from "dotenv";
 import {
   Pinecone,
+  type Index,
   type PineconeRecord,
   type ServerlessSpecCloudEnum,
 } from "@pinecone-database/pinecone";
@@ -30,15 +31,14 @@ function* chunkArray<T>(array: T[], chunkSize: number): Generator<T[]> {
 async function embedAndUpsert({
   imagePaths,
   chunkSize,
+  index,
 }: {
   imagePaths: string[];
   chunkSize: number;
+  index: Index;
 }) {
   // Chunk the image paths into batches of size chunkSize
   const chunkGenerator = chunkArray(imagePaths, chunkSize);
-
-  // Get the index
-  const index = pinecone.index(indexName);
 
   // Embed each batch and upsert the embeddings into the index
   for await (const imagePaths of chunkGenerator) {
@@ -83,7 +83,13 @@ const indexImages = async () => {
       ].some((entry) => img.includes(entry))
     );
 
-    await embedAndUpsert({ imagePaths: filteredImagePaths, chunkSize: 100 });
+    // Get the index
+    const index = pinecone.index(indexName);
+    await embedAndUpsert({
+      imagePaths: filteredImagePaths,
+      chunkSize: 100,
+      index,
+    });
     return;
   } catch (error) {
     console.error(error);

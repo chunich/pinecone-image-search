@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import Dropzone from "react-dropzone";
 // import "./App.css";
 
 interface Image {
@@ -28,23 +29,65 @@ function App() {
   const host =
     hostname === "localhost" ? `${protocol}//${hostname}:3000` : origin;
 
-  useEffect(() => {
-    const fetchImages = async () => {
-      // Load up static files from public API
-      const pokemonImages: Image[] = [];
-      for (let i = 0; i < pageSize; i++) {
-        const count = (page - 1) * pageSize + i;
-        pokemonImages.push({
-          src: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${count}.png`,
-          alt: `Image #${count}`,
-        });
-      }
-      console.log({ pokemonImages });
-      setImages(pokemonImages);
-    };
-
-    fetchImages();
+  const fetchImages = useCallback(async () => {
+    // Load up static files from public API
+    const pokemonImages: Image[] = [];
+    for (let i = 0; i < pageSize; i++) {
+      const count = (page - 1) * pageSize + i;
+      pokemonImages.push({
+        src: `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/${count}.png`,
+        alt: `Image #${count}`,
+      });
+    }
+    pokemonImages.push({
+      src: "https://images.redbox.com/Images/EPC/boxArtVertical/7628.jpg?imwidth=276",
+      alt: "",
+    });
+    pokemonImages.push({
+      src: "https://images.redbox.com/Images/EPC/boxArtVertical/218163.jpg?imwidth=276",
+      alt: "",
+    });
+    console.log({ pokemonImages });
+    setImages(pokemonImages);
   }, [page, pageSize]);
+
+  useEffect(() => {
+    void fetchImages();
+  }, [page, pageSize, fetchImages]);
+
+  const handleImageDrop = async (acceptedFiles: File[]) => {
+    const formData = new FormData();
+    acceptedFiles.forEach((file) => {
+      formData.append("images", file);
+    });
+
+    const response = await fetch(`${host}/uploadImages?pageSize=${pageSize}`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.status === 200) {
+      const { pageOfFirstImage } = await response.json();
+      await fetchImages();
+      setPage(pageOfFirstImage);
+      const imageOrImages = acceptedFiles.length > 1 ? "Images" : "Image";
+      alert(`${imageOrImages} uploaded successfully`);
+    }
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!selectedImage) return;
+
+    const response = await fetch(
+      `${host}/deleteImage?imagePath=${encodeURIComponent(selectedImage)}`,
+      { method: "DELETE" }
+    );
+    if (response.status === 200) {
+      setSelectedImage(null);
+      await fetchImages();
+      alert("Image deleted successfully");
+    }
+  };
 
   const handleIndexClick = async () => {
     setIndexing(true);
@@ -100,6 +143,20 @@ function App() {
     <div className="min-h-screen bg-gray-800 text-white w-full">
       <div className="flex place-items-center p-5">
         <h1 className="text-4xl mr-5">Image Search</h1>
+        <br />
+        <Dropzone onDrop={handleImageDrop}>
+          {({ getRootProps, getInputProps }) => (
+            <section className="mx-5 border-dashed rounded-lg border-2 border-white hover:cursor-pointer">
+              <div
+                {...getRootProps()}
+                className="p-5 flex justify-center items-center"
+              >
+                <input {...getInputProps()} />
+                <p>Drag 'n' drop some files here, or click to select files</p>
+              </div>
+            </section>
+          )}
+        </Dropzone>
         <br />
         <div className="flex flex-col font-mono text-xs">
           <div>[images] are stored in Pinecone DB</div>
@@ -188,6 +245,9 @@ function App() {
         </button>
       </div>
 
+      <h3 className="text-4xl mr-5">
+        NOTE: Results are stored locally on disk
+      </h3>
       <div className="grid grid-cols-4 gap-2 p-5">
         {searchResults?.map((result, index) => (
           <div

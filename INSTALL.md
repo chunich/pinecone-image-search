@@ -39,3 +39,5 @@ className="w-full h-4/5 object-cover"
 ```
 
 Error upserting chunk PineconeBadRequestError: Vector dimension 1024 does not match the dimension of the index 512
+
+`npm i --save multer @types/multer react-dropzone`
