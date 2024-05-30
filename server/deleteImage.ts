@@ -26,8 +26,10 @@ const getPineconeId = async (imagePath: string) => {
 const deleteImage = async (imagePath: string) => {
   const pineconeId = await getPineconeId(imagePath);
   await index.namespace("default").deleteOne(pineconeId);
+
   // Append _deleted to the image path for demo purposes
-  await fs.rename(imagePath, `${imagePath}_deleted`);
+  // await fs.rename(imagePath, `${imagePath}_deleted`);
+  await fs.rm(imagePath);
 };
 
 export { deleteImage };

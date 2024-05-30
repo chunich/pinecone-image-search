@@ -18,6 +18,7 @@ function App() {
   const [images, setImages] = useState<Image[]>([]);
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [localImageName, setLocalImageName] = useState<string | null>(null);
   const [selectedName, setSelectedName] = useState<string | null>(null);
 
   const [page, setPage] = useState(1);
@@ -76,10 +77,10 @@ function App() {
   };
 
   const handleDeleteConfirm = async () => {
-    if (!selectedImage) return;
+    if (!localImageName) return;
 
     const response = await fetch(
-      `${host}/deleteImage?imagePath=${encodeURIComponent(selectedImage)}`,
+      `${host}/deleteImage?imagePath=${encodeURIComponent(localImageName)}`,
       { method: "DELETE" }
     );
     if (response.status === 200) {
@@ -135,6 +136,10 @@ function App() {
       const matchingImages: SearchResult[] = await response.json();
       setSearchResults(matchingImages);
     }
+  };
+
+  const handleLocalImageClick = async (imagePath: string) => {
+    setLocalImageName(imagePath);
   };
 
   console.log("searchResults: ", searchResults);
@@ -198,6 +203,12 @@ function App() {
           >
             CLICK to Index all images
           </button>
+          <button
+            className="text-red-100 bg-red-500 hover:bg-red-700 focus:shadow-red-700 inline-flex h-[35px] items-center justify-center rounded-[4px] px-[15px] font-medium leading-none outline-none focus:shadow-[0_0_0_2px]"
+            onClick={handleDeleteConfirm}
+          >
+            Delete {localImageName}
+          </button>
           {indexing && (
             <div className="flex justify-center items-center h-screen">
               <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-purple-500"></div>
@@ -252,7 +263,9 @@ function App() {
         {searchResults?.map((result, index) => (
           <div
             key={index}
-            className="w-full h-60 bg-gray-600 rounded-md flex flex-col items-center justify-center my-2 overflow-hidden"
+            className={`w-full h-60 bg-gray-600 rounded-md flex flex-col items-center justify-center my-2 overflow-hidden
+            ${result.src === localImageName ? "border-4 border-blue-500" : ""}`}
+            onClick={() => handleLocalImageClick(result.src)}
           >
             <img
               src={`http://localhost:3000/${result.src}`}
