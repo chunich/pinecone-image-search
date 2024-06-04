@@ -25,6 +25,9 @@ async function embedAndUpsert({
 
   // Embed each batch and upsert the embeddings into the index
   for await (const imagePaths of chunkGenerator) {
+    // await new Promise((resolve) => {
+    //   resolve(console.log(imagePaths));
+    // });
     await embedder.embedBatch(
       imagePaths,
       chunkSize,

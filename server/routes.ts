@@ -23,9 +23,32 @@ function getImagesInRange(
 }
 
 // Save newly uploaded images to the data directory; Use .single('images') for 1 file
-const upload = multer({ dest: "data/" }).array("images");
+// const upload = multer({ dest: "data/" }).array("images");
+
+const storage = multer.diskStorage({
+  destination(req, file, cb) {
+    cb(null, "data/"); // where files will be saved
+  },
+  filename(req, file, cb) {
+    cb(null, file.originalname); // using the file's original name
+  },
+});
+const upload = multer({ storage }).array("images");
 
 const routes: Route[] = [
+  {
+    route: "/listLocalFiles",
+    method: "get",
+    handler: async (req, res) => {
+      try {
+        const folder = getEnv("IMAGE_SOURCE_FOLDER");
+        const imagePaths = await listFiles(folder);
+        res.status(200).json({ imagePaths });
+      } catch (error) {
+        res.status(500).json({ error: "Error listing local images" });
+      }
+    },
+  },
   {
     route: "/indexImages",
     method: "get",
@@ -81,7 +104,7 @@ const routes: Route[] = [
           (file) => `${file.path}`
         );
 
-        console.log({ uploadedImagePaths });
+        console.log({ uploadedImagePaths, files: JSON.stringify(req.files) });
 
         const folder = getEnv("IMAGE_SOURCE_FOLDER");
 
@@ -93,7 +116,7 @@ const routes: Route[] = [
           const pageOfFirstImage =
             Math.floor(imagePaths.indexOf(uploadedImagePaths[0]) / pageSize) +
             1;
-          res.status(200).json({ pageOfFirstImage });
+          res.status(200).json({ pageOfFirstImage, imagePaths });
         } catch (error) {
           res.status(500).json({ error: "Error uploading images" });
         }
