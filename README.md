@@ -8,6 +8,11 @@ Forked from https://github.com/pinecone-io/image-search-example
 
 # Questions
 
+## 06/04/2024
+
+- Added reference for easy upload and delete without re-indexing everything, credit: https://github.com/pinecone-io/image-search-example/pull/9/files
+- Removed `metric: "euclidean"` as is it not accurate (right now)
+
 ## 05/30/2024
 
 - Added `Dropzone` and code that allows drag-n-drop upsert

@@ -21,6 +21,7 @@ const upsertImages = async (imagePaths: string[]) => {
 
   if (!indexList.indexes?.some((index) => index.name === indexName)) {
     await pinecone.createIndex({
+      // metric: "euclidean",
       name: indexName,
       dimension: parseInt(dimensionSize, 10),
       spec: { serverless: { region: indexRegion, cloud: indexCloud } },

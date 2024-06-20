@@ -27,7 +27,7 @@ function App() {
   const [localImageName, setLocalImageName] = useState<string | null>(null);
   const [selectedName, setSelectedName] = useState<string | null>(null);
 
-  const [page, setPage] = useState(1);
+  // const [page, setPage] = useState(1);
   const [indexing, setIndexing] = useState(false);
   const [indexSuccess, setIndexSuccess] = useState(false);
   const pageSize = 24;
